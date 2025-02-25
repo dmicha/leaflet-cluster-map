@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="./dist/MarkerClusterV4.Default.css" />
     <script src="./dist/leaflet.markercluster-src.js"></script>
     <script src="./psd_fake.js"></script>
-
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         body {
             padding: 0;
@@ -37,16 +37,29 @@
 </head>
 
 <body>
-
-
     <div id="map"></div>
-    <div style="position: absolute; top: 10px; left: 70px; z-index: 1000; display: none;">
+    <div style="position: absolute; top: 10px; left: 70px; z-index: 1000;">
         <label for="cluster-radius-slider">Max Cluster Radius:</label>
-
-        <input type="number" id="cluster-radius-slider" min="1" max="500" value="233" step="1">
-        <span id="cluster-radius-value">233</span>
+        <!-- Suwak do kontrolowania maxClusterRadius -->
+        <input type="range" v-model="clusterRadius" id="cluster-radius-slider" min="1" max="500" value="150" step="1">
+        <span>{{ clusterRadius }}</span>
     </div>
+
     <script type="text/javascript">
+        const app = Vue.createApp({
+            data() {
+                return {
+                    clusterRadius: 150 // początkowa wartość promienia klastra
+                };
+            },
+            watch: {
+                clusterRadius(newValue) {
+                    markerClusterGroup.options.maxClusterRadius = (newValue == null) ? 150 : newValue;
+                    updateMarkers();
+                }
+            }
+        }).mount('body');
+
         var initialLatLng = L.latLng(52.00, 19.4198761);
         var map = L.map("map", {center: initialLatLng, zoom: 7});
 
@@ -66,7 +79,7 @@
             spiderfyOnMaxZoom: true,
             showCoverageOnHover: false,
             zoomToBoundsOnClick: true,
-            maxClusterRadius: 233
+            maxClusterRadius: (this.clusterRadius) ? this.clusterRadius : 150
         });
 
         function createClusterIcon(cluster) {
@@ -100,9 +113,11 @@
 
         function createClusterTooltipText(nameCount) {
             var entries = Object.entries(nameCount);
-            var isMultiColumn = entries.length > 5; // Ustawiamy 2 kolumny tylko gdy jest wi�cej ni� 6 element�w
+            var isMultiColumn = entries.length > 5; // Ustawiamy 2 kolumny tylko gdy jest wiecej niz 6 elementw
 
             var tooltipText = `<div class="tooltip-container ${isMultiColumn ? "multi-column" : ""}">`;
+
+            entries.sort((a, b) => a[0].localeCompare(b[0]));
 
             entries.forEach(function (entry) {
                 var name = entry[0];
@@ -205,16 +220,7 @@
         });
 
 
-        var clusterRadiusSlider = document.getElementById("cluster-radius-slider");
-        var clusterRadiusValue = document.getElementById("cluster-radius-value");
 
-        clusterRadiusSlider.addEventListener("input", function () {
-            var newRadius = clusterRadiusSlider.value;
-            markerClusterGroup.options.maxClusterRadius = newRadius;
-            clusterRadiusValue.textContent = newRadius;
-
-            updateMarkers();
-        });
         function updateMarkers() {
             map.removeLayer(markerClusterGroup);
             markerClusterGroup.clearLayers();
@@ -238,9 +244,7 @@
             event.layer.unbindTooltip();
         });
 
-
         markerClusterGroup.clearLayers();
-
         addressPoints.forEach(function (markerData) {
             markerClusterGroup.addLayer(createMarker(markerData));
         });
