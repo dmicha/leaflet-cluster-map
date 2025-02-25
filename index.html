@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mapa punktów sprzedaży detalicznej</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js" crossorigin=""></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="screen.css" />
+    <link rel="stylesheet" href="./dist/MarkerClusterV2.css" />
+    <link rel="stylesheet" href="./dist/MarkerClusterV4.Default.css" />
+    <script src="./dist/leaflet.markercluster-src.js"></script>
+    <script src="./psd_fake.js"></script>
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #fff;
+            border: none;
+        }
+
+        .leaflet-tile {
+            filter: grayscale(100%) contrast(50%) brightness(140%);
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div id="map"></div>
+    <div style="position: absolute; top: 10px; left: 70px; z-index: 1000; display: none;">
+        <label for="cluster-radius-slider">Max Cluster Radius:</label>
+
+        <input type="number" id="cluster-radius-slider" min="1" max="500" value="233" step="1">
+        <span id="cluster-radius-value">233</span>
+    </div>
+    <script type="text/javascript">
+        var initialLatLng = L.latLng(52.00, 19.4198761);
+        var map = L.map("map", {center: initialLatLng, zoom: 7});
+
+
+
+        var mapWithLabelsUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+        L.tileLayer(mapWithLabelsUrl, {
+            attribution: '&copy; OpenStreetMap contributors',
+            className: 'grayscale'
+        }).addTo(map);
+
+
+        var markerClusterGroup = L.markerClusterGroup({
+            iconCreateFunction: function (cluster) {
+                return createClusterIcon(cluster);
+            },
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true,
+            maxClusterRadius: 233
+        });
+
+        function createClusterIcon(cluster) {
+            var childCount = cluster.getChildCount();
+            var pointSize = getClusterIconSize(childCount);
+            return new L.DivIcon({
+                html: `<div class='cluster-content'>${childCount}</div>`,
+                iconAnchor: [pointSize.size / 2, pointSize.size / 2],
+                className: 'marker-cluster' + pointSize.className,
+                iconSize: [pointSize.size, pointSize.size]
+            });
+        }
+
+        function getClusterIconSize(childCount) {
+            if (childCount === '') return {className: '-single', size: 20};
+            if (childCount < 10) return {className: '-small', size: 30};
+            if (childCount < 100) return {className: '-medium', size: 40};
+            return {className: '-large', size: 50};
+        }
+
+
+        function getMarkerNamesCount(layer) {
+            var nameCount = {};
+            layer.getAllChildMarkers().forEach(function (marker) {
+                var title = marker.options.title;
+                nameCount[title] = (nameCount[title] || 0) + 1;
+            });
+            return nameCount;
+        }
+
+
+        function createClusterTooltipText(nameCount) {
+            var entries = Object.entries(nameCount);
+            var isMultiColumn = entries.length > 5; // Ustawiamy 2 kolumny tylko gdy jest wi�cej ni� 6 element�w
+
+            var tooltipText = `<div class="tooltip-container ${isMultiColumn ? "multi-column" : ""}">`;
+
+            entries.forEach(function (entry) {
+                var name = entry[0];
+                var count = entry[1];
+                tooltipText += `<div class="tooltip-item"><span>${name}:</span> <strong>${count}</strong></div>`;
+            });
+
+
+            tooltipText += `</div>`;
+            return tooltipText;
+        }
+
+
+        function createMarker(markerData) {
+            var [latitude = 0, longitude = 0, name = "NO NAME", , address1 = "", address2 = "", logoUrl = false, godziny = null] = markerData;
+
+            var marker = L.marker([latitude, longitude], {title: name});
+            var createMarkerIcon = size => new L.DivIcon({
+                html: size,
+                iconAnchor: [getClusterIconSize(size).size, getClusterIconSize(size).size],
+                className: `marker-cluster${getClusterIconSize(size).className}`,
+                iconSize: [getClusterIconSize(size).size, getClusterIconSize(size).size]
+            });
+
+            marker.setIcon(createMarkerIcon(''));
+            marker.bindTooltip(`<div class="tooltip-container"><div class="tooltip-item"><span>${name}</span></div></div>`, {direction: "top", opacity: 0.9});
+
+            var godzinyText = "Brak danych godzin";
+            if (godziny) {
+                var {pn_od, pn_do, wt_od, wt_do, sr_od, sr_do, czw_od, czw_do, pt_od, pt_do, sob_od, sob_do, nd_od, nd_do} = JSON.parse(godziny);
+                var dni = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nie"];
+                var godzinyValues = [pn_od, pn_do, wt_od, wt_do, sr_od, sr_do, czw_od, czw_do, pt_od, pt_do, sob_od, sob_do, nd_od, nd_do];
+
+                godzinyText = `<table style="font-size: 12px; border-collapse: collapse; text-align: left;">` +
+                    dni.map((dzien, i) => `<tr><td>${dzien}:</td> <td>${godzinyValues[i * 2]} - ${godzinyValues[i * 2 + 1]}</td></tr>`).join('') +
+                    `</table>`;
+            }
+
+            var popupContent = `
+        <div style="text-align: left; max-width: 250px; font-family: Arial, sans-serif; color: #333;">
+            <img src="${logoUrl}" alt="${name} Logo" 
+                 style="width: 100px; height: auto; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); margin-bottom: 10px;">
+            <h3 style="margin: 0 0 10px; font-size: 16px; color: #333; font-weight: bold;">${name}</h3>
+            <p style="font-size: 14px; margin: 5px 0; color: #555;">${address1}</p>
+            <p style="font-size: 14px; margin: 5px 0; color: #555;">${address2}</p>
+            <h4 style="margin-top: 15px; margin-bottom: 0px; font-size: 13px; font-weight: bold; color: #333;">Godziny pracy:</h4>
+            ${godzinyText}
+        </div>`;
+
+            marker.bindPopup(popupContent);
+            marker.on("click", () => map.setView([latitude, longitude], map.getZoom(), {animate: true}));
+
+            return marker;
+        }
+
+
+        var circles = [];
+
+        markerClusterGroup.on('clustermouseover', function (event) {
+            var markers = event.layer.getAllChildMarkers();
+            var maxDistance = 0;
+
+
+            for (var i = 0; i < markers.length; i++) {
+                for (var j = i + 1; j < markers.length; j++) {
+                    var distance = markers[i].getLatLng().distanceTo(markers[j].getLatLng());
+                    if (distance > maxDistance) {
+                        maxDistance = distance;
+                    }
+                }
+            }
+
+
+            var radius = maxDistance / 2;
+
+
+            var circle = L.circle(event.latlng, {
+                radius: radius,
+                color: 'blue',
+                fillColor: 'blue',
+                fillOpacity: 0.3
+            }).addTo(map);
+
+
+            circles.push(circle);
+
+
+            var nameCount = getMarkerNamesCount(event.layer);
+            var tooltipText = createClusterTooltipText(nameCount);
+
+            event.layer.bindTooltip(tooltipText, {
+                permanent: false,
+                direction: "top",
+                opacity: 0.9
+            }).openTooltip();
+
+
+            var circleElement = circle.getElement();
+            circleElement.classList.add('css-animated-circle', 'animate-circle');
+        });
+
+
+        var clusterRadiusSlider = document.getElementById("cluster-radius-slider");
+        var clusterRadiusValue = document.getElementById("cluster-radius-value");
+
+        clusterRadiusSlider.addEventListener("input", function () {
+            var newRadius = clusterRadiusSlider.value;
+            markerClusterGroup.options.maxClusterRadius = newRadius;
+            clusterRadiusValue.textContent = newRadius;
+
+            updateMarkers();
+        });
+        function updateMarkers() {
+            map.removeLayer(markerClusterGroup);
+            markerClusterGroup.clearLayers();
+
+            addressPoints.forEach(function (markerData) {
+                markerClusterGroup.addLayer(createMarker(markerData));
+            });
+
+            map.addLayer(markerClusterGroup);
+        }
+
+
+        markerClusterGroup.on('clustermouseout', function (event) {
+
+            circles.forEach(function (circle) {
+                map.removeLayer(circle);
+            });
+            circles = [];
+
+
+            event.layer.unbindTooltip();
+        });
+
+
+        markerClusterGroup.clearLayers();
+
+        addressPoints.forEach(function (markerData) {
+            markerClusterGroup.addLayer(createMarker(markerData));
+        });
+
+        map.addLayer(markerClusterGroup);
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,176 @@
+/* Styl dla pojedynczego klastra */
+.marker-cluster-single {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(0, 150, 255, 0.6); /* Jasny niebieski */
+    width: fit-content;
+    height: fit-content;
+    border: 1px solid rgba(0, 102, 204, 0.6); /* Ciemniejszy niebieski */
+    border-radius:  60% 60% 0% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.marker-cluster-single:hover{
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(0, 102, 204, 0.6); /* Ciemniejszy niebieski */
+}
+
+/* Styl dla małych klastrów */
+.marker-cluster-small {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(85, 191, 109, 0.6); /* Jasny zielony */
+    width: fit-content;
+    height: fit-content;
+    border: 1px solid rgba(55, 139, 73, 0.6); /* Ciemniejszy zielony */
+    border-radius: 60% 60% 60% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Styl dla średnich klastrów */
+.marker-cluster-medium {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(255, 193, 7, 0.6); /* Ciepły żółty */
+    width: fit-content;
+    height: fit-content;
+    border: 1px solid rgba(255, 159, 0, 0.6); /* Ciemniejszy żółty */
+    border-radius: 60% 60% 60% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Styl dla dużych klastrów */
+.marker-cluster-large {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(255, 87, 34, 0.6); /* Ciepły pomarańczowy */
+    width: fit-content;
+    height: fit-content;
+    border: 1px solid rgba(255, 56, 24, 0.6); /* Ciemniejszy pomarańczowy */
+    border-radius: 60% 60% 60% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fallback dla starszych wersji IE */
+.leaflet-oldie .marker-cluster-single {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(0, 123, 255, 0.6);
+    width: fit-content;
+    height: fit-content;
+    border: 1px solid rgba(0, 102, 204, 0.6);
+    border-radius: 60% 60% 0% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaflet-oldie .marker-cluster-small {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(85, 191, 109, 0.6);
+    width: fit-content;
+    height: fit-content;
+    border: 1px solid rgba(55, 139, 73, 0.6);
+    border-radius: 60% 60% 60% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaflet-oldie .marker-cluster-medium {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(255, 193, 7, 0.6);
+    border: 1px solid rgba(255, 159, 0, 0.6);
+    width: fit-content;
+    height: fit-content;
+    border-radius: 60% 60% 60% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaflet-oldie .marker-cluster-large {
+	font: 20px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    background-color: rgba(255, 87, 34, 0.6);
+    border: 1px solid rgba(255, 56, 24, 0.6);
+    width: fit-content;
+    height: fit-content;
+    border-radius: 60% 60% 60% 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Styl główny dla klastra */
+.marker-cluster {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: stroke-dashoffset 0.3s ease-out, stroke-opacity 0.3s ease-in;
+    padding: 0;
+    text-align: left;
+    width: fit-content;
+    height: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-cluster div {
+    text-align: left;
+    width: fit-content;
+    height: fit-content;
+    font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    padding-left: 10px;
+}
+
+.marker-cluster span {
+    text-align: left;
+    color: white;
+    line-height: 30px;
+}
+
+.cluster-tooltip {
+    padding-left: 10px;
+    margin: 0;
+    background: rgba(255, 255, 255, 0.9); 
+    padding: 8px 12px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-size: 12px;
+    color: #333;
+    max-width: 250px;
+}
+.leaflet-interactive {
+    stroke: #6e605677 !important; /* Kolor obrysu */
+    stroke-width: 3px !important; /* Grubość linii */
+    fill: #6e60565b !important; /* Kolor wypełnienia z przezroczystością */
+}
+.tooltip-container {
+    display: grid;
+    grid-template-columns: 1fr; /* Domyślnie jedna kolumna */
+    gap: 10px;
+    max-width: 300px;
+    background: rgba(255, 255, 255, 0);
+    padding: 5px;
+    border-radius: 5px;
+    border:0;
+}
+
+.tooltip-item {
+    padding: 4px 0;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* .tooltip-item:last-child {
+    border-bottom: none;
+} */
+
+/* Jeśli jest więcej niż 6 elementów → 2 kolumny */
+.tooltip-container.multi-column {
+    grid-template-columns: 1fr 1fr;
+}
